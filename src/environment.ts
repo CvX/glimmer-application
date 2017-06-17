@@ -35,6 +35,9 @@ import {
  } from './dynamic-component';
  import action from './helpers/action';
  import buildUserHelper from './helpers/user-helper';
+ import {
+   ConstReference,
+ } from '@glimmer/object-reference';
 
 type KeyFor<T> = (item: Opaque, index: T) => string;
 
@@ -99,6 +102,28 @@ export default class Environment extends GlimmerEnvironment {
     if (!manager) {
       let app: Application = getOwner(this) as any as Application;
       manager = this.managers[managerId] = getOwner(this).lookup(`component-manager:/${app.rootName}/component-managers/${managerId}`);
+
+      manager.prepareArgs = function(definition, _args): any {
+        let args = _args.capture();
+        if (args.positional.length !== 1) return null;
+
+        let componentArgsRef = args.positional.at(0);
+        if (componentArgsRef['property'] !== 'args') return null;
+
+        let componentArgs = componentArgsRef.value();
+        if (!componentArgs) return null;
+        if (!Object.keys(componentArgs).length) return null;
+
+        let named = {};
+        for (let k in componentArgs) {
+          named[k] = new ConstReference(componentArgs[k]);
+        }
+
+        return {
+          positional: [],
+          named,
+        };
+      };
       if (!manager) {
         throw new Error(`No component manager found for ID ${managerId}.`);
       }

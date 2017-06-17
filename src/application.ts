@@ -17,7 +17,8 @@ import {
   UpdatableReference
 } from '@glimmer/object-reference';
 import {
-  Option
+  Option,
+  Dict,
 } from '@glimmer/util';
 import ApplicationRegistry from './application-registry';
 import DynamicScope from './dynamic-scope';
@@ -41,7 +42,13 @@ export interface AppRoot {
   id: number;
   component: string | ComponentDefinition<Component>;
   parent: Simple.Node;
-  nextSibling: Option<Simple.Node>;
+  options: RenderComponentOptions;
+}
+
+export interface RenderComponentOptions {
+  nextSibling?: Option<Simple.Node>;
+  args?: Dict<any>;
+  attributes?: Dict<string>;
 }
 
 export default class Application implements Owner {
@@ -156,8 +163,8 @@ export default class Application implements Owner {
     this._rendered = true;
   }
 
-  renderComponent(component: string | ComponentDefinition<Component>, parent: Simple.Node, nextSibling: Option<Simple.Node> = null): void {
-    this._roots.push({ id: this._rootsIndex++, component, parent, nextSibling });
+  renderComponent(component: string | ComponentDefinition<Component>, parent: Simple.Node, options: RenderComponentOptions = {}): void {
+    this._roots.push({ id: this._rootsIndex++, component, parent, options });
     this.scheduleRerender();
   }
 

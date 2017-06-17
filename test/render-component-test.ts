@@ -60,7 +60,7 @@ test('renders a component before a given sibling', async function(assert) {
 
   assert.equal(containerElement.innerHTML, '<p></p><aside></aside>');
 
-  app.renderComponent('hello-world', containerElement, nextSibling);
+  app.renderComponent('hello-world', containerElement, { nextSibling });
 
   await didRender(app);
 
@@ -121,9 +121,26 @@ test('renders multiple components in the same container in particular places', a
   assert.equal(containerElement.innerHTML, '<aside></aside>');
 
   app.renderComponent('hello-world', containerElement);
-  app.renderComponent('hello-robbie', containerElement, nextSibling);
+  app.renderComponent('hello-robbie', containerElement, { nextSibling });
 
   await didRender(app);
 
   assert.equal(containerElement.innerHTML, '<h1>Hello Robbie!</h1><aside></aside><h1>Hello Glimmer!</h1>');
+});
+
+test('renders a component with arguments', async function(assert) {
+  assert.expect(1);
+
+  let containerElement = document.createElement('div');
+
+  let app = buildApp()
+    .template('hello-world', `<h1>Hello {{@name}} {{@lastName}}!</h1>`)
+    .boot();
+
+  let args = { name: 'Glimmer', lastName: 'Person' };
+  app.renderComponent('hello-world', containerElement, { args });
+
+  await didRender(app);
+
+  assert.equal(containerElement.innerHTML, '<h1>Hello Glimmer Person!</h1>');
 });
